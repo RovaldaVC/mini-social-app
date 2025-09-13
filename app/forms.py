@@ -52,3 +52,29 @@ class signInValidator(FlaskForm):
         validators.DataRequired(message="password is needed."),
         validators.length(min=8, max=32, message="password must be between 8 to 32 numbers.")
     ])
+
+class updateValidator:
+        name = StringField("name", validators=[
+        validators.Optional(),
+        validators.length(min=4, max=20)
+    ])
+    
+        family = StringField("family", validators=[
+            validators.Optional(),
+            validators.length(min=4, max=20)
+    ])
+    
+        username = StringField("username", 
+                            filters=[
+        lambda x: x.strip() if x else x
+    ],
+                            validators=[
+        validators.Optional(),
+        validators.length(min=4, max=20),
+        validators.Regexp('^[A-Za-z][A-Za-z0-9_.]*$', message="Username must only contain letters, numbers, dots, and underscores.")
+    ])
+    
+        password = PasswordField("password", validators=[
+            validators.Optional(),
+            validators.length(min=8, max=32, message="password must be between 8 to 32 numbers.")
+    ])
