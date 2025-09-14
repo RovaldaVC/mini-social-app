@@ -4,6 +4,7 @@ from app.forms import signUpValidator, signInValidator, updateValidator
 from app.models import signUpData, updateData
 from flask_jwt_extended import jwt_required, create_access_token, get_jwt, get_jwt_identity
 from bson.objectid import ObjectId
+
 userCollection = None
 
 class signUp(Resource):
@@ -132,10 +133,69 @@ class users(Resource):
                 }, 403
     @jwt_required()
     def get(self, id=None):
-        pass
+        claims = get_jwt()
+        role = claims["role"]
+        if role == "admin":
+            if id is None:
+                usersList = userCollection.find({})
+                return{
+                    "status":"successfull",
+                    "message":"you have access to the list of users",
+                    "users": list(usersList)
+                }, 200
+            else:
+                targetedUser = userCollection.find_one({"_id":ObjectId(id)})
+                if targetedUser:
+                    return{
+                        "status":"successfull",
+                        "message":"we found your user.",
+                        "user":targetedUser
+                    }
+                else:
+                    return{
+                        "status":"error",
+                        "message":"we couldn't find the user."
+                    }, 404
+        else:
+            return{
+                "status":"error",
+                "message":"Forbidden area, Access denied!"
+            }, 403
     @jwt_required()
     def delete(self, id=None):
-        pass
+        if id is None:
+            number = get_jwt_identity()
+            targetedUser = userCollection.delete_one({"number":number})
+            if targetedUser.delete_count > 0:
+                return{
+                    "status":"successfull",
+                    "message":"your account was deleted successfully."
+                },200
+            else:
+                return{
+                    "status":"error", 
+                    "message":"we couldn't find your account"
+                }, 404
+        else:
+            claims = get_jwt()
+            role = claims["role"]
+            if role == "admin":
+                targetedUser = userCollection.delete_one({"_id":ObjectId})
+                if targetedUser.deleted_count > 0:
+                    return{
+                        "status":"successfull",
+                        "message":"your account was deleted successfully."
+                    },200
+                else:
+                    return{
+                        "status":"error",
+                        "message":"we couldn't find your account, try again."
+                    }, 404
+            else:
+                return{
+                    "status":"error",
+                    "message":"Forbidden area, Access denied!"
+                },403
 
 class texting(Resource):
     def post(self):

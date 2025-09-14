@@ -78,3 +78,9 @@ class updateValidator:
             validators.Optional(),
             validators.length(min=8, max=32, message="password must be between 8 to 32 numbers.")
     ])
+        
+class textValidator(FlaskForm):
+    text = StringField("text", validators=[
+        validators.DataRequired(),
+        validators.length(min=1, max=5000)
+    ])
